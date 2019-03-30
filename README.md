@@ -8,6 +8,6 @@ The Constrained Model is an algorithm that I created using the defined contest c
 
 The Random Forest Regression Model was something that I wanted to develop in order to better understand the application of machine learning in a quantitative finance. Although basic in its actual application, I feel like this helped me understand the actual objective that machine learning models try to accomplish. The idea of implementing trading strategies based on machine learning has been growing with popularity, however perfecting a model that relies heavily on a machine learned alpha vector is still very difficult even amongst seasoned professionals. That being said, I feel that this is the direction that we are headed, and in the near future this type of model is going to be implemented across all firms in the industry, some way or another. 
 
-Visit https://www.quantopian.com/algorithms and copy/past any of the algorithms to test!
+Visit https://www.quantopian.com/algorithms and copy/paste any of the algorithms to test!
 
 Enjoy! ^_^
