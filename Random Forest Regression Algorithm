@@ -1,0 +1,90 @@
+# Simple Machine Learning Algorithm - Random Forest Regression
+# =============================================================================================
+
+# I have developed the below algorithm using the resources found in the Quantopian Lectures and Forums. 
+# This notebook was created and written by Brooks Woolfolk. All materials are for educational purposes. 
+
+# Visit https://www.quantopian.com/algorithms/ if you would like to test and adjust the below ^_^
+
+# IMPORT MACHINE LEARNING LIBRARIES
+#=====================================================================================================================
+from sklearn.ensemble import RandomForestRegressor
+import numpy as np
+
+# LEARNING OBJECTIVE: TRAIN MODEL TO "LEARN", AND PREDICT OUTPUT BASED ON RECENT PRICE MOVEMENTS
+# METHOD: RANDOM FOREST REGRESSION
+
+def initialize(context):
+    
+    
+    # TRADE SPY (S&P 500 INDEX)
+    context.security = sid(8554)
+    
+    
+    # TRAINING PARAMETERS
+    #================================================================================================================= 
+    
+    # DEFINE TRAINING MODEL
+    context.model = RandomForestRegressor()    
+    
+    # DEFINE LOOKBACK PERIOD ('N' DAYS TO LOOK BACK)
+    context.lookback = 13
+    
+    # DEFINE HISTORY RANGE (HOW MANY DAYS SHOULD BE CONSIDERED IN MODEL)
+    context.history_range = 252
+    
+    
+    # SCHEDULE FUNCTIONS
+    #=================================================================================================================    
+
+    # TRADE EVERY DAY AT MARKET OPEN
+    schedule_function(trade, date_rules.every_day(), time_rules.market_open())
+    
+    
+    # CREATE A MODEL EVERY WEEK, 10 MINUTES BEFORE MARKET CLOSE
+    schedule_function(create_model, date_rules.week_end(), time_rules.market_close(minutes=10))
+    
+   
+#=====================================================================================================================
+def create_model(context, data):
+    
+    # GET DAILY PRICE VALUES FOR HISTORICAL DATE RANGE (USED TO CALCULATE DAILY CHANGES IN HISTORICAL PRICES)
+    recent_prices = data.history(context.security, 'price', context.history_range, '1d').values
+    
+    # CALCULATE DAILY CHANGES IN HISTORICAL PRICE
+    price_changes = np.diff(recent_prices).tolist()
+
+    X = [] # LIST TO STORE INPUT VARIABLES
+    Y = [] # LIST TO STORE OUTPUT (PREDICTION) VARIABLE
+    
+    # FOR EACH DATE IN HISTORICAL DATE RANGE
+    for day in range(context.history_range-context.lookback-1):
+        
+        # FOR EACH DATE, STORE [CURRENT DAY PRICE CHANGE, DAY 2 PRICE CHANGE, ..., DAY 'N' PRICE CHANGE]
+        X.append(price_changes[day:day+context.lookback]) 
+        
+        # FOR EACH DATE, STORE [DAY 'N' PRICE CHANGE]
+        Y.append(price_changes[day+context.lookback]) 
+    
+    # GENERATE MODEL
+    context.model.fit(X, Y) 
+
+#=====================================================================================================================     
+def trade(context, data):
+    if context.model: # CHECK IF MODEL EXISTS BEFORE TRADING
+        
+        # GET DAILY PRICE VALUES FOR LOOKBACK+1 DATE RANGE (USED TO CALCULATE DAILY CHANGES IN RECENT PRICES)
+        recent_prices = data.history(context.security, 'price', context.lookback+1, '1d').values
+        
+        # CALCULATE DAILY CHANGES IN RECENT PRICES
+        price_changes = np.diff(recent_prices).tolist()
+       
+        # USING RECENT CHANGES IN DAILY PRICES AS INPUT, PREDICT OUTPUT USING MODEL
+        prediction = context.model.predict(price_changes)
+        record(prediction = prediction)
+        
+        # TRADE LONG FOR POSITIVE PREDICTION, SHORT FOR NEGATIVE PREDICTION
+        if prediction > 0:
+            order_target_percent(context.security, 1.0)
+        else:
+            order_target_percent(context.security, -1.0)
