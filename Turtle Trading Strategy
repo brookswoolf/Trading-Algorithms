@@ -1,0 +1,230 @@
+"""
+Turtle Trading Strategy
+Author: Brooks Woolfolk
+
+The Turtle Trading Strategy is a Complete Trading System taught by Richard Dennis and Bill Eckhardt
+in an experiment where they tried to determine if trading skills can be taught to anyone. The Turtle
+group returned ~80% per year on average over the course of four years. 
+
+Entry Signals:
+
+    This is based on the Channel Breakout System taught by Richard Donchian
+
+    System 1 Entry: (20)
+    If the price exceeded the rolling 20-day high by one tick, buy 1 Unit in market(long)
+    If the price dropped below the rolling 20-day low by one tick, sell 1 Unit in market (short)
+
+    System 2 Entry: (55)
+    If the price exceeded the rolling 55-day high by one tick, buy 1 Unit in market(long)
+    If the price dropped below the rolling 55-day low by one tick, sell 1 Unit in market (short)
+    
+Exit Signals:
+
+    System 1 Exit: (10)
+    If the price dropped below the rolling 10-day low by one tick, exit long position
+    If the price exceeded the rolling 10-day high by one tick, exit short position
+
+    System 2 Exit: (20)
+    If the price dropped below the rolling 20-day low by one tick, exit long position
+    If the price exceeded the rolling 20-day high by one tick, exit short position
+ 
+ 
+    In this model, we are going to be trading System 2. 
+
+
+The full risk management model is a risk constraint I would like to implement down the road:
+
+Risk Management in Units
+------------------------     Max Units
+1 Single Market:                4
+2 Closely Correlated Market:    6
+3 Loosely Correlated Market:    10
+4 Single Direction- Long/Short: 12
+
+The back tester uses Interactive Brokers Commission table and proprietary slippage model
+based on a rebuilt order book and volume metrics for accurate transaction cost effect  
+
+"""
+import math
+import numpy as np
+import pandas as pd
+from talib import ATR
+
+
+def initialize(context):
+    
+    
+    # Define all of the Turtle's tradable futures that work in the backtesting IDE.
+    # Since the Turtles did not trade every futures market, the fact they don't all
+    # work seems to be a natural and convenient way to narrow down our markets.
+    
+    context.sugar = continuous_future('SB', offset=0, roll='volume', adjustment='mul')
+    context.crude_oil = continuous_future('CL', offset=0, roll='volume', adjustment='mul')
+    context.heating_oil = continuous_future('HO', offset=0, roll='volume', adjustment='mul')
+    context.gold = continuous_future('GC', offset=0, roll='volume', adjustment='mul')
+    context.silver = continuous_future('SV', offset=0, roll='volume', adjustment='mul')
+    context.copper = continuous_future('HG', offset=0, roll='volume', adjustment='mul')
+    context.sp500 = continuous_future('SP', offset=0, roll='volume', adjustment='mul')
+    context.sp500_emini = continuous_future('ES', offset=0, roll='volume', adjustment='mul')
+    
+    # Create a list of our futures
+    context.my_futures = [context.sugar, 
+                          context.crude_oil, 
+                          context.heating_oil, 
+                          context.gold, 
+                          context.silver, 
+                          context.copper,  
+                          context.sp500, 
+                          context.sp500_emini, 
+                          ]  
+    
+    
+    # (Equity market it open for 6 hours and 30 minutes) 8:30am - 3:00pm
+    # This is also the time of day where the futures market is the MOST liquid
+    # total_minutes is just the total number of minutes the market is open
+    total_minutes = 6 * 60 + 30
+
+    # Check for trades every ten minutes
+    # * Ideally we would run the trade logic through handle_data *
+    for i in range(1, total_minutes):        
+        
+        
+        if i % 10 == 0:
+            schedule_function(rebalance, 
+                              date_rules.every_day(), 
+                              time_rules.market_open(minutes=i), 
+                              True)
+            
+
+    # Record the number of long and short positions at market close every day 
+    schedule_function(record_vars, date_rules.every_day(), time_rules.market_close())
+
+
+def rebalance(context, data):
+#def handle_data(context, data):
+    
+    # Return the 20-day 'high', 'low', and 'close' for True Range calculation
+    price_history = data.history(context.my_futures, ['high', 'low','close', 'price'], 21, '1d') 
+    
+    # Return the 10-day 'price' history of our futures
+    recent_prices = data.history(context.my_futures, ['price'], 10, '1d') 
+    
+    # Return the current contract of each of our futures
+    contracts = data.current(context.my_futures, 'contract')
+    
+    # Store the current portfolio value for unit calculation
+    port_size = context.portfolio.portfolio_value
+    
+    
+    # TRADE LOGIC
+    #-------------
+    for future in context.my_futures:
+        
+        future_contract = contracts[future]          
+        
+        
+        # N CALCULATION (VOLATILITY METRIC)
+        #---------------------------------
+        highs = price_history['high'][future]
+        lows = price_history['low'][future]
+        closes = price_history['close'][future]
+
+        # Current True Range    
+        N = ATR(highs, lows, closes, timeperiod=20)[-1]     
+    
+        if np.isnan(N):
+            continue
+            
+            
+        # DOLLAR VOLATILITY ADJUSTMENT
+        #------------------------------
+        # Dollar Volatility
+        dV = N * future_contract.multiplier
+                
+        # Unit Calculation 
+        unit = math.floor((port_size * 0.002) / dV)
+
+        
+        # Store the values of our current position, cost basis, and market price
+        current_position = context.portfolio.positions[future].amount 
+        cost_basis = context.portfolio.positions[future].cost_basis  
+        price = data.current(future, 'price')
+        
+        # Logs to see the price data every time the function is called
+        log.info("Today's price of %s is: " % (future_contract.root_symbol) + str(price))
+        #log.info("The 20-day high is: " + str(np.sort(highs)[-1]))
+        #log.info("The 20-day low is: " + str(np.sort(lows)[0]))
+     
+    
+        high_20 = True if price >= max(price_history['price'][future]) else False
+        low_20 = True if price <= min(price_history['price'][future]) else False
+
+        high_10 = True if price >= max(recent_prices['price'][future]) else False
+        low_10 = True if price <= max(recent_prices['price'][future]) else False
+        
+        
+        #INITIAL ENTRY
+        #---------------                       
+        if high_20:
+            order(future_contract, unit)
+            
+        elif low_20:
+            order(future_contract, -unit)
+            
+        else:
+            pass
+
+        
+        # CHECK POSITIONS 
+        # ----------------
+        for future in context.portfolio.positions:
+     
+            
+            # ADDING UNITS (Units are added at 1/2 N intervals)
+            #---------------------------------------------------   
+            # Additional Long Unit
+            if price >= (cost_basis + (N/2)) and current_position > 0:  
+                order(future_contract, unit)  
+                
+            # Additional Short Unit
+            if price <= (cost_basis - (N/2)) and current_position < 0:
+                order(future_contract, -unit)  
+      
+    
+            # STOP LOSSES 
+            #-------------
+            # Long Loss
+            if price <= (cost_basis - (2 * N)) and current_position > 0:  
+                order_target_percent(future_contract, 0)  
+
+            # Short Loss
+            if price >= (cost_basis + (2 * N)) and current_position < 0:  
+                order_target_percent(future_contract, 0)  
+                
+
+            # EXIT STRATEGY 
+            #---------------
+            # Long Exit
+            if low_10 and current_position > 0:  
+                order_target_percent(future_contract, 0)  
+
+            # Short Exit
+            if high_10 and current_position < 0:  
+                order_target_percent(future_contract, 0) 
+
+               
+     
+# RECORD VARIABLES
+#------------------
+def record_vars(context, data):
+
+    # Count the long and short positions we currently hold
+    longs = shorts = 0
+    for position in context.portfolio.positions.itervalues():
+        if position.amount > 0:
+            longs += 1
+        elif position.amount < 0:
+            shorts += 1
+
+    # Record variables
+    record(long_count=longs, short_count=shorts)
