@@ -1,6 +1,6 @@
-# Algorithms
+## Algorithms
 
-This repository contains the customized trading algorithms that I have created using the Quantopian IDE.
+This repository contains the customized trading algorithms that I have created using the Quantopian IDE:
 
 The Futures Breakout Trading Strategy was inspired by a book about the teachings of Richard Dennis and his trading partner Bill Eckhardt during the Turtle Experiment in 1983. The model trades eight different futures markets in an attempt to capture breakout patterns. In the experiment, they took 14 traders and taught them a complete rule-based trading system for determining markets, position sizing, entries, stops, exits, and a handful of miscellaneous (and useful) trading tactics that can be used to leverage different market nuances. Over the course of five years of trading, the Turtle group had reportedly earned more than $175 million. Visit http://bigpicture.typepad.com/comments/files/turtlerules.pdf for the complete book.  
 
