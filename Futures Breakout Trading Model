@@ -48,6 +48,7 @@ The back tester uses Interactive Brokers Commission table and proprietary slippa
 based on a rebuilt order book and volume metrics for accurate transaction cost effect  
 
 """
+
 import math
 import numpy as np
 from talib import ATR
