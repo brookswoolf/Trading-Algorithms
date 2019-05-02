@@ -214,12 +214,12 @@ def rebalance(context, data):
 
             # ADDING UNITS (Units are added at N/2 intervals)
             #---------------------------------------------------   
-            # Additional Long Unit   * 1.005      
+            # Additional Long Unit      
             if price >= (cost_basis + (N / 2)):
                 log.info("Purchased additional unit of %s at $" % (future_contract.asset_name) + str(price))
                 order(current_contract, unit)
 
-            # Additional Short Unit * 0.995
+            # Additional Short Unit
             if price <= (cost_basis - (N / 2)):
                 log.info("Shorted additional unit of %s at $" % (future_contract.asset_name) + str(price))
                 order(current_contract, -unit)  
@@ -227,12 +227,12 @@ def rebalance(context, data):
 
             # STOP LOSSES 
             #-------------
-            # Long Loss * 0.98
+            # Long Loss
             if price <= (cost_basis - (2 * N)):
                 log.info("Stopped out of long in %s at $" % (future_contract.asset_name) + str(price))
                 order_target_percent(current_contract, 0)  
 
-            # Short Loss * 1.02
+            # Short Loss
             if price >= (cost_basis + (2 * N)):
                 log.info("Stopped out of short in %s at $" % (future_contract.asset_name) + str(price))
                 order_target_percent(current_contract, 0)  
