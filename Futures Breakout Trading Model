@@ -50,7 +50,6 @@ based on a rebuilt order book and volume metrics for accurate transaction cost e
 """
 import math
 import numpy as np
-import pandas as pd
 from talib import ATR
 
 
