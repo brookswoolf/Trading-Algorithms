@@ -163,14 +163,14 @@ def rebalance(context, data):
         low_10 = True if price <= min(recent_prices['low'][future]) else False
 
         
-        # ENTRY STRATEGY
+        # ENTRY STRATEGY 
         #----------------
-        # Long Entry
+        # Long Entry (Enter long position if we hit a new 20-day high)
         if high_20:
             log.info("Entering long position in %s at: " % (future_contract.asset_name) + str(price))
             order(future_contract, unit)
             
-        # Short Entry    
+        # Short Entry (Enter short position if we hit a new 20-day low)   
         elif low_20:
             log.info("Entering short position in %s at: " % (future_contract.asset_name) + str(price))
             order(future_contract, -unit)
@@ -178,12 +178,12 @@ def rebalance(context, data):
         
         # EXIT STRATEGY 
         #---------------
-        # Long Exit
+        # Long Exit (Exit long position if we hit a new 10-day low)
         elif low_10:
             log.info("Exiting long position in %s at: " % (future_contract.asset_name) + str(price))
             order_target_percent(future_contract, 0)  
 
-        # Short Exit
+        # Short Exit (Exit short position if we hit a new 10-day high)
         elif high_10:
             log.info("Exiting short position in %s at: " % (future_contract.asset_name) + str(price))
             order_target_percent(future_contract, 0)            
@@ -224,8 +224,8 @@ def rebalance(context, data):
                 order(current_contract, -unit)  
 
 
-            # STOP LOSSES 
-            #-------------
+            # STOP LOSSES (We stop out at 2*N intervals)
+            #--------------------------------------------
             # Long Loss
             if price <= (cost_basis - (2 * N)):
                 log.info("Stopped out of long in %s at $" % (future_contract.asset_name) + str(price))
