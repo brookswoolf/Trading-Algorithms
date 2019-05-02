@@ -1,11 +1,13 @@
 """
-Futures Breakout Trading Model
+Futures Breakout Trading Model 
 Author: Brooks Woolfolk
+
 
 The Turtle Trading Strategy was a Complete Trading System taught by Richard Dennis and Bill Eckhardt
 in an experiment where they tried to determine if trading skills can be taught to anyone. The Turtle
 group returned ~80% per year on average over the course of four years. This algorithm was written in 
 an attempt to capture the same markets and trade signals. 
+
 
 Entry Signals:
 
@@ -83,54 +85,55 @@ def initialize(context):
     # (Equity market it open for 6 hours and 30 minutes) 8:30am - 3:00pm
     # This is also the time of day where the futures market is the MOST liquid
     # total_minutes is just the total number of minutes the market is open
+    
     total_minutes = 6 * 60 + 30
 
     # Check for trades every ten minutes
     # * Ideally we would run the trade logic through handle_data *
     for i in range(1, total_minutes):        
         
-        
         if i % 10 == 0:
             schedule_function(rebalance, 
                               date_rules.every_day(), 
                               time_rules.market_open(minutes=i), 
                               True)
-            
-
+    
+        
+    #schedule_function(rebalance, date_rules.every_day(), time_rules.market_open())
+    
     # Record the number of long and short positions at market close every day 
     schedule_function(record_vars, date_rules.every_day(), time_rules.market_close())
-
+    
+    
 
 def rebalance(context, data):
-#def handle_data(context, data):
-    
+        
     # Return the 20-day 'high', 'low', and 'close' for True Range calculation
-    price_history = data.history(context.my_futures, ['high', 'low','close', 'price'], 21, '1d') 
+    price_history = data.history(context.my_futures, ['high', 'low', 'close', 'price'], 21, '1d') 
     
     # Return the 10-day 'price' history of our futures
-    recent_prices = data.history(context.my_futures, ['price'], 10, '1d') 
+    recent_prices = data.history(context.my_futures, ['high', 'low', 'price'], 10, '1d') 
     
     # Return the current contract of each of our futures
     contracts = data.current(context.my_futures, 'contract')
     
-    # Store the current portfolio value for unit calculation
-    port_size = context.portfolio.portfolio_value
+    position_size = context.portfolio.portfolio_value * 0.001
     
     
     # TRADE LOGIC
     #-------------
     for future in context.my_futures:
         
+        
         future_contract = contracts[future]          
-        
-        
+               
         # N CALCULATION (VOLATILITY METRIC)
         #---------------------------------
         highs = price_history['high'][future]
         lows = price_history['low'][future]
         closes = price_history['close'][future]
 
-        # Current True Range    
+        # 20-Day Average True Range    
         N = ATR(highs, lows, closes, timeperiod=20)[-1]     
     
         if np.isnan(N):
@@ -143,89 +146,103 @@ def rebalance(context, data):
         dV = N * future_contract.multiplier
                 
         # Unit Calculation 
-        unit = math.floor((port_size * 0.002) / dV)
-
-        
-        # Store the values of our current position, cost basis, and market price
-        current_position = context.portfolio.positions[future].amount 
-        cost_basis = context.portfolio.positions[future].cost_basis  
+        unit = math.floor(position_size / dV)
+ 
         price = data.current(future, 'price')
-        
-        # Logs to see the price data every time the function is called
-        log.info("Today's price of %s is: " % (future_contract.root_symbol) + str(price))
-        #log.info("The 20-day high is: " + str(np.sort(highs)[-1]))
-        #log.info("The 20-day low is: " + str(np.sort(lows)[0]))
-     
-    
-        high_20 = True if price >= max(price_history['price'][future]) else False
-        low_20 = True if price <= min(price_history['price'][future]) else False
 
-        high_10 = True if price >= max(recent_prices['price'][future]) else False
-        low_10 = True if price <= max(recent_prices['price'][future]) else False
         
+        # Logs to see the price and unit data every time the function is called
+        #log.info("Today's price of %s is: " % (future_contract.asset_name) + str(price))
+        #log.info("The 20-day high of %s is: " % (future_contract.asset_name) + str(max(price_history['high'][future]))
+        #log.info("The 20-day low of %s is: " % (future_contract.asset_name) + str(min(price_history['low'][future]))
+        #log.info("Current unit of %s is: " % (future_contract.asset_name) + str(unit))
+    
+        high_20 = True if price >= max(price_history['high'][future]) else False
+        low_20 = True if price <= min(price_history['low'][future]) else False
         
-        #INITIAL ENTRY
-        #---------------                       
+        high_10 = True if price >= max(recent_prices['high'][future]) else False
+        low_10 = True if price <= min(recent_prices['low'][future]) else False
+
+        
+        # ENTRY STRATEGY
+        #----------------
+        # Long Entry
         if high_20:
+            log.info("Entering long position in %s at: " % (future_contract.asset_name) + str(price))
             order(future_contract, unit)
             
+        # Short Entry    
         elif low_20:
+            log.info("Entering short position in %s at: " % (future_contract.asset_name) + str(price))
             order(future_contract, -unit)
-            
+        
+        
+        # EXIT STRATEGY 
+        #---------------
+        # Long Exit
+        elif low_10:
+            log.info("Exiting long position in %s at: " % (future_contract.asset_name) + str(price))
+            order_target_percent(future_contract, 0)  
+
+        # Short Exit
+        elif high_10:
+            log.info("Exiting short position in %s at: " % (future_contract.asset_name) + str(price))
+            order_target_percent(future_contract, 0)            
+        
         else:
             pass
-
-        
-        # CHECK POSITIONS 
-        # ----------------
-        for future in context.portfolio.positions:
-     
-            
-            # ADDING UNITS (Units are added at 1/2 N intervals)
-            #---------------------------------------------------   
-            # Additional Long Unit
-            if price >= (cost_basis + (N/2)) and current_position > 0:  
-                order(future_contract, unit)  
-                
-            # Additional Short Unit
-            if price <= (cost_basis - (N/2)) and current_position < 0:
-                order(future_contract, -unit)  
       
-    
+        
+        # CHECK POSITIONS
+        #-----------------
+        current_position = context.portfolio.positions[data.current(context.my_futures, 'contract')[future]]
+        current_contract = current_position.asset        
+
+        if current_contract in context.portfolio.positions and data.can_trade(current_contract) and not get_open_orders(current_contract):
+            
+            cost_basis = context.portfolio.positions[current_contract].cost_basis             
+            price = data.current(current_contract, 'price')
+            
+            
+            # Log details for each position
+            log.info("=================================")
+            log.info("POSITION DETAILS FOR %s" % str(current_contract.asset_name))
+            log.info("---------------------------------")
+            log.info("The price is %s" % str(price))
+            log.info("Cost basis is $ %s" % str(cost_basis))
+
+
+            # ADDING UNITS (Units are added at N/2 intervals)
+            #---------------------------------------------------   
+            # Additional Long Unit   * 1.005      
+            if price >= (cost_basis + (N / 2)):
+                log.info("Purchased additional unit of %s at $" % (future_contract.asset_name) + str(price))
+                order(current_contract, unit)
+
+            # Additional Short Unit * 0.995
+            if price <= (cost_basis - (N / 2)):
+                log.info("Shorted additional unit of %s at $" % (future_contract.asset_name) + str(price))
+                order(current_contract, -unit)  
+
+
             # STOP LOSSES 
             #-------------
-            # Long Loss
-            if price <= (cost_basis - (2 * N)) and current_position > 0:  
-                order_target_percent(future_contract, 0)  
+            # Long Loss * 0.98
+            if price <= (cost_basis - (2 * N)):
+                log.info("Stopped out of long in %s at $" % (future_contract.asset_name) + str(price))
+                order_target_percent(current_contract, 0)  
 
-            # Short Loss
-            if price >= (cost_basis + (2 * N)) and current_position < 0:  
-                order_target_percent(future_contract, 0)  
-                
+            # Short Loss * 1.02
+            if price >= (cost_basis + (2 * N)):
+                log.info("Stopped out of short in %s at $" % (future_contract.asset_name) + str(price))
+                order_target_percent(current_contract, 0)  
 
-            # EXIT STRATEGY 
-            #---------------
-            # Long Exit
-            if low_10 and current_position > 0:  
-                order_target_percent(future_contract, 0)  
-
-            # Short Exit
-            if high_10 and current_position < 0:  
-                order_target_percent(future_contract, 0) 
-
-               
+                                          
      
 # RECORD VARIABLES
 #------------------
 def record_vars(context, data):
-
-    # Count the long and short positions we currently hold
-    longs = shorts = 0
-    for position in context.portfolio.positions.itervalues():
-        if position.amount > 0:
-            longs += 1
-        elif position.amount < 0:
-            shorts += 1
-
-    # Record variables
-    record(long_count=longs, short_count=shorts)
+    
+    # Log portfolio information (current value and positions)
+    log.info("Current portfolio value : $" + str(context.portfolio.portfolio_value))
+    log.info("Current holdings are :$" + str(context.portfolio.positions))
