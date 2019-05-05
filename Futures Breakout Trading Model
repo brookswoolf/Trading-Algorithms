@@ -32,7 +32,7 @@ Exit Signals:
     If the price exceeded the rolling 20-day high by one tick, exit short position
  
  
-    In this model, we are going to be trading System 2. 
+    In this model, we are going to be trading System 1. 
 
 
 The full risk management model is a risk constraint I would like to implement down the road:
@@ -69,6 +69,8 @@ def initialize(context):
     context.copper = continuous_future('HG', offset=0, roll='volume', adjustment='mul')
     context.sp500 = continuous_future('SP', offset=0, roll='volume', adjustment='mul')
     context.sp500_emini = continuous_future('ES', offset=0, roll='volume', adjustment='mul')
+    context.wheat = continuous_future('WC', offset=0, roll='volume', adjustment='mul')
+    context.wheat_emini = continuous_future('MW', offset=0, roll='volume', adjustment='mul')
     
     # Create a list of our futures
     context.my_futures = [context.sugar, 
@@ -79,6 +81,8 @@ def initialize(context):
                           context.copper,  
                           context.sp500, 
                           context.sp500_emini, 
+                          context.wheat,
+                          context.wheat_emini,
                           ]  
     
     
@@ -88,8 +92,8 @@ def initialize(context):
     
     total_minutes = 6 * 60 + 30
 
-    # Check for trades every ten minutes
-    # * Ideally we would run the trade logic through handle_data *
+    #Check for trades every five minutes
+    
     for i in range(1, total_minutes):        
         
         if i % 10 == 0:
@@ -99,11 +103,10 @@ def initialize(context):
                               True)
     
         
-    #schedule_function(rebalance, date_rules.every_day(), time_rules.market_open())
+    # schedule_function(rebalance, date_rules.every_day(), time_rules.market_open())
     
     # Record the number of long and short positions at market close every day 
     schedule_function(record_vars, date_rules.every_day(), time_rules.market_close())
-    
     
 
 def rebalance(context, data):
@@ -117,12 +120,22 @@ def rebalance(context, data):
     # Return the current contract of each of our futures
     contracts = data.current(context.my_futures, 'contract')
     
-    position_size = context.portfolio.portfolio_value * 0.001
-    
-    
+
     # TRADE LOGIC
     #-------------
     for future in context.my_futures:
+        
+        # Position constraints based on performance
+        portfolio_value = context.portfolio.portfolio_value
+        
+        if portfolio_value > (900000):
+            position_size = portfolio_value * 0.01
+    
+        elif portfolio_value <= (900000) and portfolio_value >= (500000):
+            position_size = portfolio_value * 0.005
+    
+        else:
+            position_size = portfolio_value * 0.00001        
         
         
         future_contract = contracts[future]          
@@ -152,10 +165,10 @@ def rebalance(context, data):
 
         
         # Logs to see the price and unit data every time the function is called
-        #log.info("Today's price of %s is: " % (future_contract.asset_name) + str(price))
-        #log.info("The 20-day high of %s is: " % (future_contract.asset_name) + str(max(price_history['high'][future]))
-        #log.info("The 20-day low of %s is: " % (future_contract.asset_name) + str(min(price_history['low'][future]))
-        #log.info("Current unit of %s is: " % (future_contract.asset_name) + str(unit))
+        # log.info("Today's price of %s is: " % (future_contract.asset_name) + str(price))
+        # log.info("The 20-day high of %s is: " % (future_contract.asset_name) + str(max(price_history['high'][future]))
+        # log.info("The 20-day low of %s is: " % (future_contract.asset_name) + str(min(price_history['low'][future]))
+        # log.info("Current unit of %s is: " % (future_contract.asset_name) + str(unit))
     
         high_20 = True if price >= max(price_history['high'][future]) else False
         low_20 = True if price <= min(price_history['low'][future]) else False
@@ -164,29 +177,29 @@ def rebalance(context, data):
         low_10 = True if price <= min(recent_prices['low'][future]) else False
 
         
-        # ENTRY STRATEGY 
+        # ENTRY STRATEGY
         #----------------
-        # Long Entry (Enter long position if we hit a new 20-day high)
+        # Long Entry
         if high_20:
-            log.info("Entering long position in %s at: " % (future_contract.asset_name) + str(price))
+            log.info("Entering long position in %s at $" % (future_contract.asset_name) + str(price))
             order(future_contract, unit)
             
-        # Short Entry (Enter short position if we hit a new 20-day low)   
+        # Short Entry    
         elif low_20:
-            log.info("Entering short position in %s at: " % (future_contract.asset_name) + str(price))
+            log.info("Entering short position in %s at $" % (future_contract.asset_name) + str(price))
             order(future_contract, -unit)
         
         
         # EXIT STRATEGY 
         #---------------
-        # Long Exit (Exit long position if we hit a new 10-day low)
+        # Long Exit
         elif low_10:
-            log.info("Exiting long position in %s at: " % (future_contract.asset_name) + str(price))
+            log.info("Exiting long position in %s at $" % (future_contract.asset_name) + str(price))
             order_target_percent(future_contract, 0)  
 
-        # Short Exit (Exit short position if we hit a new 10-day high)
+        # Short Exit
         elif high_10:
-            log.info("Exiting short position in %s at: " % (future_contract.asset_name) + str(price))
+            log.info("Exiting short position in %s at $" % (future_contract.asset_name) + str(price))
             order_target_percent(future_contract, 0)            
         
         else:
@@ -202,38 +215,46 @@ def rebalance(context, data):
             
             cost_basis = context.portfolio.positions[current_contract].cost_basis             
             price = data.current(current_contract, 'price')
-            
+            holding = context.portfolio.positions[current_contract].amount
+            long_position = True if holding > 0 else False
+            short_position = True if holding < 0 else False
             
             # Log details for each position
             log.info("=================================")
             log.info("POSITION DETAILS FOR %s" % str(current_contract.asset_name))
-            log.info("---------------------------------")
-            log.info("The price is %s" % str(price))
-            log.info("Cost basis is $ %s" % str(cost_basis))
-
-
+            log.info("The price is $ %s" % str(price))
+            log.info("We are holding %s shares" % str(holding))
+            log.info("Our cost basis is $ %s" % str(cost_basis))
+            log.info("Dollar value is $ %s" % str(abs(cost_basis*holding)))
+            log.info("=================================")
+            
+            # Restrict trading when position is greater than 10% of the portfolio
+            if (abs(holding * cost_basis)) > (portfolio_value * 0.1):
+                continue
+             
+            
             # ADDING UNITS (Units are added at N/2 intervals)
             #---------------------------------------------------   
-            # Additional Long Unit      
-            if price >= (cost_basis + (N / 2)):
+            # Additional Long Unit     
+            if price >= (cost_basis + (N / 2)) and long_position:
                 log.info("Purchased additional unit of %s at $" % (future_contract.asset_name) + str(price))
-                order(current_contract, unit)
+                order (current_contract, unit)
 
             # Additional Short Unit
-            if price <= (cost_basis - (N / 2)):
+            if price <= (cost_basis - (N / 2)) and short_position:
                 log.info("Shorted additional unit of %s at $" % (future_contract.asset_name) + str(price))
                 order(current_contract, -unit)  
 
 
             # STOP LOSSES (We stop out at 2*N intervals)
-            #--------------------------------------------
+            #-------------------------------------------
             # Long Loss
-            if price <= (cost_basis - (2 * N)):
+            if price <= (cost_basis - (2 * N)) and long_position:
                 log.info("Stopped out of long in %s at $" % (future_contract.asset_name) + str(price))
                 order_target_percent(current_contract, 0)  
 
             # Short Loss
-            if price >= (cost_basis + (2 * N)):
+            if price >= (cost_basis + (2 * N)) and short_position:
                 log.info("Stopped out of short in %s at $" % (future_contract.asset_name) + str(price))
                 order_target_percent(current_contract, 0)  
 
@@ -243,6 +264,9 @@ def rebalance(context, data):
 #------------------
 def record_vars(context, data):
     
+    portfolio_value = context.portfolio.portfolio_value
+    #holdings = context.portfolio.positions
+    
     # Log portfolio information (current value and positions)
-    log.info("Current portfolio value : $" + str(context.portfolio.portfolio_value))
-    log.info("Current holdings are :$" + str(context.portfolio.positions))
+    log.info("Current portfolio value : $" + str(portfolio_value))
+    #log.info("Current holdings are :$" + str(holdings))
