@@ -3,10 +3,10 @@ Futures Breakout Trading Model
 Author: Brooks Woolfolk
 
 
-The Turtle Trading Strategy was a Complete Trading System taught by Richard Dennis and Bill Eckhardt
-in an experiment where they tried to determine if trading skills can be taught to anyone. The Turtle
-group returned ~80% per year on average over the course of four years. This algorithm was written in 
-an attempt to capture the same markets and trade signals. 
+The Turtle Trading Strategy was a Complete Trading System taught by well known traders Richard Dennis 
+and Bill Eckhardt in an experiment where they tried to determine if trading skills can be taught to anyone. 
+The Turtle group returned ~80% per year on average over the course of four years. This algorithm was written  
+in an attempt to capture the same markets and trade signals. 
 
 
 Entry Signals:
