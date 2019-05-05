@@ -8,10 +8,8 @@ and Bill Eckhardt in an experiment where they tried to determine if trading skil
 The Turtle group returned ~80% per year on average over the course of four years. This algorithm was written  
 in an attempt to capture the same markets and trade signals. 
 
-
+Channel Breakout System
 Entry Signals:
-
-    This is based on the Channel Breakout System
 
     System 1 Entry: (20)
     If the price exceeded the rolling 20-day high by one tick, buy 1 Unit in market(long)
