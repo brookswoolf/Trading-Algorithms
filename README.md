@@ -34,3 +34,5 @@ This model serves as a framework to trade multiple pairs of cointegrated equitie
 ### Monthly Momentum Model
 I developed this model in response to an inquiry on the Quantopian forums. A user was inquiring how to incorporate a double sort technique to rank and order stocks in the pipeline based on monthly returns. The positive (negative) sign of cumulative monthly returns is used as a pre-filter for the long (short) baskets. Stocks are continuously ranked based on 21-day returns (average amount of trading days per month). Stocks in the long basket with the highest 21-day returns are bought long, and stocks in the short basket with the lowest 21-day returns are sold short. The portfolio is set up to be dollar neutral and rebalances once a month. The links to the posts are [here](https://www.quantopian.com/posts/help-with-custom-factor-1#5ca63355ef3ace1c54ccd5f4) and [here](https://www.quantopian.com/posts/help-with-custom-factor-1#5ca6c0531abbaa321f790e34).
 
+![backtest6](https://github.com/brookswoolf/Trading-Algorithms/blob/master/Backtests/Monthly%20Momentum%20Model.gif)
+
