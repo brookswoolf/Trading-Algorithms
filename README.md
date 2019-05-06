@@ -6,7 +6,7 @@ Go to [Quantopian](https://www.quantopian.com/algorithms) and copy/paste any of 
 
 Enjoy! ^_^
 
-![backtest1](https://github.com/brookswoolf/Trading-Algorithms/blob/master/Backtests/Multi%20Factor%20Model.gif)
+![backtest1](https://github.com/brookswoolf/Trading-Algorithms/blob/master/Images/Trading.gif)
 
 ### The Multi-Factor Model
 This is the project that I dedicated myself to creating once I learned how to use Python to implement a trading model based on traditional financial theories. Factor investing is the idea of creating a portfolio that is weighted based on favorable factors such as quality, growth, value, momentum, and size (to name a few). A lot of research has been done and published regarding the concept of factor investing, so I thought to use my skills to develop a model that can be easily implemented and altered. When creating anything like this, I am sure to make it not only very user accessible, but also organized and visually aesthetic. As a note, the driving factor and strategy of this algorithm was researched before being backtested in the IDE. This algorithm was heavily influenced by my research  in the below notebook:
