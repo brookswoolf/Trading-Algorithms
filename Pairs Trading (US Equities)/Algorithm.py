@@ -15,12 +15,12 @@ def initialize(context):
     # TECH
     context.goog = sid(26578)
     context.fb = sid(42950)
-    # ENERGY ** need to change to ABGB/FSLR (per the quantopian pairs trade lecture)
-    context.aee = sid(24783)
-    context.exc = sid(22114)
-    # CURRENCY **changed to canada and australia per Ernie Chan's backtested algo -- update the rest of the algo ***
-    context.usa = sid(14516)
-    context.eur = sid(14517) 
+    # ENERGY 
+    context.abgb = sid(45676)
+    context.fslr = sid(32902)
+    # CURRENCY 
+    context.aud = sid(14516)
+    context.cad = sid(14517) 
     
     # IDEALLY WE WOULD HAVE A MULTITUDE OF PAIRS THAT WE HAVE CONFIRMED 
     # ARE *CURRENTLY* COINTEGRATED PER OUR RESEARCH. ADDITIONAL PAIRS
@@ -87,15 +87,15 @@ def check_pairs1(context,data):
         
         # IF THE Z SCORE IS GREATER THAN ONE WE EXPECT THE MEAN TO REVERT, SO WE TRADE UNDER THAT ASSUMPTION
         if zscore > 1.0 and not context.shorting_spread1:
-            order_target_percent(aa,0.5)
-            order_target_percent(ual,-0.5)
+            order_target_percent(aa,-0.125)
+            order_target_percent(ual,0.125)
             context.shorting_spread1 = True
             context.long_on_spread1 = False
             
         # IF THE Z SCORE IS LESS THAN ONE WE EXPECT THE MEAN TO REVERT, SO WE TRADE UNDER THAT ASSUMPTION    
         elif zscore < 1.0 and not context.long_on_spread1:
-            order_target_percent(aa,-0.5)
-            order_target_percent(ual,0.5)
+            order_target_percent(aa,0.125)
+            order_target_percent(ual,-0.125)
             context.shorting_spread1 = False
             context.long_on_spread1 = True
         
@@ -142,15 +142,15 @@ def check_pairs2(context,data):
         
         # IF THE Z SCORE IS GREATER THAN ONE WE EXPECT THE MEAN TO REVERT, SO WE TRADE UNDER THAT ASSUMPTION
         if zscore > 1.0 and not context.shorting_spread2:
-            order_target_percent(goog,0.5)
-            order_target_percent(fb,-0.5)
+            order_target_percent(goog,-0.125)
+            order_target_percent(fb,0.125)
             context.shorting_spread2 = True
             context.long_on_spread2 = False
             
         # IF THE Z SCORE IS LESS THAN ONE WE EXPECT THE MEAN TO REVERT, SO WE TRADE UNDER THAT ASSUMPTION    
         elif zscore < 1.0 and not context.long_on_spread2:
-            order_target_percent(goog,-0.5)
-            order_target_percent(fb,0.5)
+            order_target_percent(goog,0.125)
+            order_target_percent(fb,-0.125)
             context.shorting_spread2 = False
             context.long_on_spread2 = True
         
@@ -171,22 +171,22 @@ def check_pairs3(context,data):
 # NEED TO BE TWEAKED ACROSS DIFFERENT STRATEGIES --NAMELY THE LOOKBACK PERIOD, 
 # TARGET PORTFOLIO WEIGHTS, AND POTENTIALLY THE Z SCORE THRESHOLDS (TRADE SIGNALS).
 
-    aee = context.aee
-    exc = context.exc
+    abgb = context.abgb
+    fslr = context.fslr
     
     # EACH TIME THE FUNCTION IS CALLED, RETURN THE 21 DAY PRICE HISTORY
-    prices = data.history([aee,exc],'price',21,'1d')
+    prices = data.history([abgb,fslr],'price',21,'1d')
     
     # RETURN MOST RECENT DAYS PRICES BASED ON ILOC[-1:]
     short_prices = prices.iloc[-1:] 
     
     # AVERAGE OF THE 21 DAY PRICE SPREAD  
-    mavg_21 = np.mean(prices[aee] - prices[exc])
+    mavg_21 = np.mean(prices[abgb] - prices[fslr])
     # STDEV OF THE 21 DAY PRICE SPREAD
-    std_21 = np.std(prices[aee] - prices[exc])
+    std_21 = np.std(prices[abgb] - prices[fslr])
     
     # AVERAGE OF THE MOST RECENT DAYS PRICE SPREAD
-    mavg_1 = np.mean(short_prices[aee] - short_prices[exc])
+    mavg_1 = np.mean(short_prices[abgb] - short_prices[fslr])
     
     # IF OUR STDEV IS GREATER THAN 0...
     if std_21 > 0:
@@ -197,22 +197,22 @@ def check_pairs3(context,data):
         
         # IF THE Z SCORE IS GREATER THAN ONE WE EXPECT THE MEAN TO REVERT, SO WE TRADE UNDER THAT ASSUMPTION
         if zscore > 1.0 and not context.shorting_spread3:
-            order_target_percent(aee,0.5)
-            order_target_percent(exc,-0.5)
+            order_target_percent(abgb,-0.125)
+            order_target_percent(fslr,0.125)
             context.shorting_spread3 = True
             context.long_on_spread3 = False
             
         # IF THE Z SCORE IS LESS THAN ONE WE EXPECT THE MEAN TO REVERT, SO WE TRADE UNDER THAT ASSUMPTION    
         elif zscore < 1.0 and not context.long_on_spread3:
-            order_target_percent(aee,-0.5)
-            order_target_percent(exc,0.5)
+            order_target_percent(abgb,0.125)
+            order_target_percent(fslr,-0.125)
             context.shorting_spread3 = False
             context.long_on_spread3 = True
         
         # IF THE Z SCORE IS LESS THAN 0.25 WE ASSUME THE MEAN HAS REVERTED (ENOUGH), SO WE EXIT OUT PAIRED POSITIONS
         elif abs(zscore) < 0.25:
-            order_target_percent(aee,0)
-            order_target_percent(exc,0)
+            order_target_percent(abgb,0)
+            order_target_percent(fslr,0)
             context.shorting_spread3 = False
             context.long_on_spread3 = False
             
@@ -227,22 +227,22 @@ def check_pairs4(context,data):
 # NEED TO BE TWEAKED ACROSS DIFFERENT STRATEGIES --NAMELY THE LOOKBACK PERIOD, 
 # TARGET PORTFOLIO WEIGHTS, AND POTENTIALLY THE Z SCORE THRESHOLDS (TRADE SIGNALS).
 
-    usa = context.usa
-    eur = context.eur
+    aud = context.aud
+    cad = context.cad
     
     # EACH TIME THE FUNCTION IS CALLED, RETURN THE 21 DAY PRICE HISTORY
-    prices = data.history([usa,eur],'price',21,'1d')
+    prices = data.history([aud,cad],'price',21,'1d')
     
     # RETURN MOST RECENT DAYS PRICES BASED ON ILOC[-1:]
     short_prices = prices.iloc[-1:] 
     
     # AVERAGE OF THE 21 DAY PRICE SPREAD  
-    mavg_21 = np.mean(prices[usa] - prices[eur])
+    mavg_21 = np.mean(prices[aud] - prices[cad])
     # STDEV OF THE 21 DAY PRICE SPREAD
-    std_21 = np.std(prices[usa] - prices[eur])
+    std_21 = np.std(prices[aud] - prices[cad])
     
     # AVERAGE OF THE MOST RECENT DAYS PRICE SPREAD
-    mavg_1 = np.mean(short_prices[usa] - short_prices[eur])
+    mavg_1 = np.mean(short_prices[aud] - short_prices[cad])
     
     # IF OUR STDEV IS GREATER THAN 0...
     if std_21 > 0:
@@ -253,21 +253,21 @@ def check_pairs4(context,data):
         
         # IF THE Z SCORE IS GREATER THAN ONE WE EXPECT THE MEAN TO REVERT, SO WE TRADE UNDER THAT ASSUMPTION
         if zscore > 1.0 and not context.shorting_spread4:
-            order_target_percent(usa,0.5)
-            order_target_percent(eur,-0.5)
+            order_target_percent(aud,-0.125)
+            order_target_percent(cad,0.125)
             context.shorting_spread4 = True
             context.long_on_spread4 = False
             
         # IF THE Z SCORE IS LESS THAN ONE WE EXPECT THE MEAN TO REVERT, SO WE TRADE UNDER THAT ASSUMPTION    
         elif zscore < 1.0 and not context.long_on_spread4:
-            order_target_percent(usa,-0.5)
-            order_target_percent(eur,0.5)
+            order_target_percent(aud,0.125)
+            order_target_percent(cad,-0.125)
             context.shorting_spread4 = False
             context.long_on_spread4 = True
         
         # IF THE Z SCORE IS LESS THAN 0.25 WE ASSUME THE MEAN HAS REVERTED (ENOUGH), SO WE EXIT OUT PAIRED POSITIONS
         elif abs(zscore) < 0.25:
-            order_target_percent(usa,0)
-            order_target_percent(eur,0)
+            order_target_percent(aud,0)
+            order_target_percent(cad,0)
             context.shorting_spread4 = False
             context.long_on_spread4 = False
