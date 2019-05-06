@@ -32,9 +32,9 @@ def initialize(context):
     
     # SCHEDULE FUNCTIONS
     schedule_function(check_pairs1, date_rules.every_day(), time_rules.market_open())
-    schedule_function(check_pairs2, date_rules.every_day(), time_rules.market_open())
+    #schedule_function(check_pairs2, date_rules.every_day(), time_rules.market_open())
     schedule_function(check_pairs3, date_rules.every_day(), time_rules.market_open())
-    schedule_function(check_pairs4, date_rules.month_start(), time_rules.market_open())
+    #schedule_function(check_pairs4, date_rules.month_start(), time_rules.market_open())
     
     # INITIALIZE THE FIRST LONG/SHORT POSITIONS TO FALSE SINCE WE HAVE NO TRADES YET
     context.long_on_spread1 = False
@@ -51,6 +51,7 @@ def initialize(context):
     # INITIALIZE THE FOURTH LONG/SHORT POSITIONS TO FALSE SINCE WE HAVE NO TRADES YET
     context.long_on_spread4 = False
     context.shorting_spread4 = False
+
     
 # AIRLINE PAIR TRADE (AMERICAN/UNITED)
 def check_pairs1(context,data):
@@ -87,15 +88,15 @@ def check_pairs1(context,data):
         
         # IF THE Z SCORE IS GREATER THAN ONE WE EXPECT THE MEAN TO REVERT, SO WE TRADE UNDER THAT ASSUMPTION
         if zscore > 1.0 and not context.shorting_spread1:
-            order_target_percent(aa,-0.125)
-            order_target_percent(ual,0.125)
+            order_target_percent(aa,-0.5)
+            order_target_percent(ual,0.5)
             context.shorting_spread1 = True
             context.long_on_spread1 = False
             
         # IF THE Z SCORE IS LESS THAN ONE WE EXPECT THE MEAN TO REVERT, SO WE TRADE UNDER THAT ASSUMPTION    
         elif zscore < 1.0 and not context.long_on_spread1:
-            order_target_percent(aa,0.125)
-            order_target_percent(ual,-0.125)
+            order_target_percent(aa,0.5)
+            order_target_percent(ual,-0.5)
             context.shorting_spread1 = False
             context.long_on_spread1 = True
         
@@ -109,12 +110,6 @@ def check_pairs1(context,data):
             
 # TECH PAIR TRADE (GOOGLE/FACEBOOK)            
 def check_pairs2(context,data):
-    
-# IN A FRAMEWORK WITH MULTIPLE PAIRS TRADING AT ONCE, WE WOULD ALLOCATE 
-# LESS CAPITAL TO EACH PAIR AND SIMPLY COPY/PASTE THE CHECK_PAIRS TRADING FORMULA  
-# RESPECTIVE TO EACH PAIR TRADING STRATEGY. KEEP IN MIND THAT CERTAIN VARIABLES MAY  
-# NEED TO BE TWEAKED ACROSS DIFFERENT STRATEGIES --NAMELY THE LOOKBACK PERIOD, 
-# TARGET PORTFOLIO WEIGHTS, AND POTENTIALLY THE Z SCORE THRESHOLDS (TRADE SIGNALS).
 
     goog = context.goog
     fb = context.fb
@@ -142,15 +137,15 @@ def check_pairs2(context,data):
         
         # IF THE Z SCORE IS GREATER THAN ONE WE EXPECT THE MEAN TO REVERT, SO WE TRADE UNDER THAT ASSUMPTION
         if zscore > 1.0 and not context.shorting_spread2:
-            order_target_percent(goog,-0.125)
-            order_target_percent(fb,0.125)
+            order_target_percent(goog,-0.5)
+            order_target_percent(fb,0.5)
             context.shorting_spread2 = True
             context.long_on_spread2 = False
             
         # IF THE Z SCORE IS LESS THAN ONE WE EXPECT THE MEAN TO REVERT, SO WE TRADE UNDER THAT ASSUMPTION    
         elif zscore < 1.0 and not context.long_on_spread2:
-            order_target_percent(goog,0.125)
-            order_target_percent(fb,-0.125)
+            order_target_percent(goog,0.5)
+            order_target_percent(fb,-0.5)
             context.shorting_spread2 = False
             context.long_on_spread2 = True
         
@@ -162,15 +157,9 @@ def check_pairs2(context,data):
             context.long_on_spread2 = False
             
             
-# ENERGY PAIR TRADE (AMEREN/EXCELON)            
+# ENERGY PAIR TRADE (ABGB/FIRST SOLAR)            
 def check_pairs3(context,data):
     
-# IN A FRAMEWORK WITH MULTIPLE PAIRS TRADING AT ONCE, WE WOULD ALLOCATE 
-# LESS CAPITAL TO EACH PAIR AND SIMPLY COPY/PASTE THE CHECK_PAIRS TRADING FORMULA  
-# RESPECTIVE TO EACH PAIR TRADING STRATEGY. KEEP IN MIND THAT CERTAIN VARIABLES MAY  
-# NEED TO BE TWEAKED ACROSS DIFFERENT STRATEGIES --NAMELY THE LOOKBACK PERIOD, 
-# TARGET PORTFOLIO WEIGHTS, AND POTENTIALLY THE Z SCORE THRESHOLDS (TRADE SIGNALS).
-
     abgb = context.abgb
     fslr = context.fslr
     
@@ -197,15 +186,15 @@ def check_pairs3(context,data):
         
         # IF THE Z SCORE IS GREATER THAN ONE WE EXPECT THE MEAN TO REVERT, SO WE TRADE UNDER THAT ASSUMPTION
         if zscore > 1.0 and not context.shorting_spread3:
-            order_target_percent(abgb,-0.125)
-            order_target_percent(fslr,0.125)
+            order_target_percent(abgb,0.5)
+            order_target_percent(fslr,-0.5)
             context.shorting_spread3 = True
             context.long_on_spread3 = False
             
         # IF THE Z SCORE IS LESS THAN ONE WE EXPECT THE MEAN TO REVERT, SO WE TRADE UNDER THAT ASSUMPTION    
         elif zscore < 1.0 and not context.long_on_spread3:
-            order_target_percent(abgb,0.125)
-            order_target_percent(fslr,-0.125)
+            order_target_percent(abgb,-0.5)
+            order_target_percent(fslr,0.5)
             context.shorting_spread3 = False
             context.long_on_spread3 = True
         
@@ -218,15 +207,9 @@ def check_pairs3(context,data):
             
             
             
-# CURRENCY PAIR TRADE (USA/EUROPE)            
+# CURRENCY PAIR TRADE (AUSTRALIA/CANADA)            
 def check_pairs4(context,data):
     
-# IN A FRAMEWORK WITH MULTIPLE PAIRS TRADING AT ONCE, WE WOULD ALLOCATE 
-# LESS CAPITAL TO EACH PAIR AND SIMPLY COPY/PASTE THE CHECK_PAIRS TRADING FORMULA  
-# RESPECTIVE TO EACH PAIR TRADING STRATEGY. KEEP IN MIND THAT CERTAIN VARIABLES MAY  
-# NEED TO BE TWEAKED ACROSS DIFFERENT STRATEGIES --NAMELY THE LOOKBACK PERIOD, 
-# TARGET PORTFOLIO WEIGHTS, AND POTENTIALLY THE Z SCORE THRESHOLDS (TRADE SIGNALS).
-
     aud = context.aud
     cad = context.cad
     
@@ -253,15 +236,15 @@ def check_pairs4(context,data):
         
         # IF THE Z SCORE IS GREATER THAN ONE WE EXPECT THE MEAN TO REVERT, SO WE TRADE UNDER THAT ASSUMPTION
         if zscore > 1.0 and not context.shorting_spread4:
-            order_target_percent(aud,-0.125)
-            order_target_percent(cad,0.125)
+            order_target_percent(aud,0.5)
+            order_target_percent(cad,-0.5)
             context.shorting_spread4 = True
             context.long_on_spread4 = False
             
         # IF THE Z SCORE IS LESS THAN ONE WE EXPECT THE MEAN TO REVERT, SO WE TRADE UNDER THAT ASSUMPTION    
         elif zscore < 1.0 and not context.long_on_spread4:
-            order_target_percent(aud,0.125)
-            order_target_percent(cad,-0.125)
+            order_target_percent(aud,-0.5)
+            order_target_percent(cad,0.5)
             context.shorting_spread4 = False
             context.long_on_spread4 = True
         
