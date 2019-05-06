@@ -9,7 +9,7 @@ import pandas as pd
 
 def initialize(context):    
     
-    # TRADE SPY (S&P 500 INDEX)
+    # TRADE APPLE STOCK
     context.security = sid(24)
     set_benchmark(symbol('AAPL'))
     
