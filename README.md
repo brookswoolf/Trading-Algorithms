@@ -2,7 +2,9 @@
 
 This repository contains the customized trading algorithms that I have created using the Quantopian IDE:
 
+Visit https://www.quantopian.com/algorithms and copy/paste any of the algorithms to test!
 
+Enjoy! ^_^
 
 ### The Futures Breakout Trading Model 
 This was inspired by a book about the teachings of Richard Dennis and his trading partner Bill Eckhardt during the Turtle Experiment in 1983. The model trades eight different futures markets in an attempt to capture breakout patterns. In the experiment, they took 14 traders and taught them a complete rule-based trading system for determining markets, position sizing, entries, stops, exits, and a handful of miscellaneous (and useful) trading tactics that can be used to leverage different market nuances. Over the course of five years of trading, the Turtle group had reportedly earned more than $175 million. Visit http://bigpicture.typepad.com/comments/files/turtlerules.pdf for the complete book.  
@@ -16,6 +18,4 @@ This is an algorithm that I created using the defined contest criteria for Quant
 ### The Random Forest Regression Model 
 This was something that I wanted to develop in order to better understand the application of machine learning in a quantitative finance. Although basic in its actual application, I feel like this helped me understand the actual objective that machine learning models try to accomplish. The idea of implementing trading strategies based on machine learning has been growing with popularity, however perfecting a model that relies heavily on a machine learned alpha vector is still very difficult even amongst seasoned professionals. That being said, I feel that this is the direction that we are headed, and in the near future this type of model is going to be implemented across all firms in the industry, some way or another. 
 
-Visit https://www.quantopian.com/algorithms and copy/paste any of the algorithms to test!
 
-Enjoy! ^_^
