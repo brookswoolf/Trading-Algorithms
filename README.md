@@ -13,7 +13,7 @@ This is the project that I dedicated myself to creating once I learned how to us
 ### The Constrained Model 
 This is an algorithm that I created using the defined contest criteria for Quantopian. This algorithm has more adjustable constraint and optimization settings compared to the Multi Factor Model simply because it is focused on those objectives. The Multi Factor Model is better for backtesting different alpha factor theories using different combinations of factors. The tested alpha factor from the Multi Factor Model can be easily plugged into this model and tested using the costrained criteria. This model can also be seen as a conservative approach to reviewing the actual strength of your alpha factor in a real world setting.
 
-#### The Random Forest Regression Model 
+### The Random Forest Regression Model 
 This was something that I wanted to develop in order to better understand the application of machine learning in a quantitative finance. Although basic in its actual application, I feel like this helped me understand the actual objective that machine learning models try to accomplish. The idea of implementing trading strategies based on machine learning has been growing with popularity, however perfecting a model that relies heavily on a machine learned alpha vector is still very difficult even amongst seasoned professionals. That being said, I feel that this is the direction that we are headed, and in the near future this type of model is going to be implemented across all firms in the industry, some way or another. 
 
 Visit https://www.quantopian.com/algorithms and copy/paste any of the algorithms to test!
