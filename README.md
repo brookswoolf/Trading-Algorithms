@@ -23,8 +23,8 @@ This is an algorithm that I created using the defined contest criteria for Quant
 
 The alpha factor was initially researched in this notebook: https://github.com/brookswoolf/Research-Notebooks/blob/master/Alpha%20Analysis.ipynb
 
-#### "Alpha Analysis" 
-This notebook was made to test different fundamental alpha theories. I wanted to make a notebook that was concise, but also very informational. You can come up with any combination of different fundamental values, ratios, and any other Morningstar data you like. This book uses tear sheets to analyze the effect of the factors and returns across different sectors and portfolios. When analyzing the predictive value of an alpha factor, it is common to look at the mean information coefficient. The information coefficient essentially represents the correlation between the predicted values of a stock and the actual outcome. At the bottom, you can also visualize the 'decay' of your alpha factor across the data set by plotting the mean information coefficient.
+##### "Alpha Analysis" https://github.com/brookswoolf/Research-Notebooks/blob/master/Alpha%20Analysis.ipynb
+This notebook was initially made to test different fundamental alpha theories. I wanted to make a notebook that was concise, but also very informational. You can come up with any combination of different fundamental values, ratios, and any other Morningstar data you like. This book uses tear sheets to analyze the effect of the factors and returns across different sectors and portfolios. When analyzing the predictive value of an alpha factor, it is common to look at the mean information coefficient. The information coefficient essentially represents the correlation between the predicted values of a stock and the actual outcome. At the bottom, you can also visualize the 'decay' of your alpha factor across the data set by plotting the mean information coefficient.
 
 
 ### The Random Forest Regression Model 
