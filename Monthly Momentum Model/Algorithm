@@ -123,8 +123,8 @@ def record_vars(context, data):
 def rebalance(context,data):
     
     # DEFINE THE TARGET WEIGHT OF EACH STOCK IN THE PORTFOLIO TO BE EQUAL ACROSS BOTH LISTS
-    long_weight = 0.02#context.long_leverage / float(len(context.long_list))
-    short_weight = -0.02#context.short_leverage / float(len(context.short_list))
+    long_weight = context.long_leverage / float(len(context.long_list))
+    short_weight = context.short_leverage / float(len(context.short_list))
 
     # FOR EACH STOCK THAT WE HAVE CLASSIFIED IN OUR LONG AND SHORT LISTS, 
     # WE WANT TO PLACE A MARKET ORDER BASED ON THE DEFINED TARGET PERCENT. 
