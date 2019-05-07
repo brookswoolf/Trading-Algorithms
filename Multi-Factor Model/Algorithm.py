@@ -1,5 +1,4 @@
 # Multi-Factor Model Template
-# =======================================================================================================================
 
 # I have developed the below algorithm using my own research, supplemented with the resources found in the Quantopian Lectures and Forums.
 # This notebook was created and written by Brooks Woolfolk. All materials are for educational purposes. 
@@ -9,7 +8,7 @@
 
 
 # IMPORT LIBRARIES
-#=========================================================================================================================
+#------------------
 # IMPORT PIPELINE
 from quantopian.pipeline import Pipeline
 from quantopian.pipeline import CustomFactor
@@ -31,7 +30,7 @@ from quantopian.pipeline.factors import AverageDollarVolume,SimpleMovingAverage
 
 
 # DEFINE CUSTOM FACTORS                      
-#=========================================================================================================================                      
+#-----------------------                     
 
 # FACTOR 1: ASSET TURNOVER
 class AssetTurnover(CustomFactor):
@@ -167,7 +166,7 @@ class MarketCap(CustomFactor):
         
                 
 # INITIALIZE ALGORITHM                      
-#=========================================================================================================================                      
+#----------------------                     
 def initialize(context):
     
     # ATTACH PIPELINE NAME
@@ -268,9 +267,8 @@ def initialize(context):
     
     
 # SETTINGS
-#=========================================================================================================================    
-    
-    
+#----------   
+        
     # PIPELINE SCREEN SETTINGS
     pipe.set_screen(universe & (momentum>0))
     
@@ -302,13 +300,10 @@ def initialize(context):
     # set_commission(us_equities=commission.PerShare(cost=0.001, min_trade_cost=0), 
     #                us_futures=commission.PerContract(cost=1, exchange_fee=0.85, min_trade_cost=0))
                     
-        
-
-
-        
+               
         
 # EVERYDAY BEFORE TRADING START: 
-#==========================================================================================================================                      
+#--------------------------------                 
 def before_trading_start(context, data):
     
     # CALL PIPELINE BEFORE TRADING START (FILL N/A IS DEFAULT TO NaN)
@@ -321,7 +316,7 @@ def before_trading_start(context, data):
                 
                 
 # RECORD AND RETURN VARIABLES: RETURN THE TOP TEN QUALITY RANKING STOCKS FROM THE LONG AND SHORT LISTS       
-#=========================================================================================================================                           
+#------------------------------------------------------------------------------------------------------                          
 def record_vars(context, data):  
     
     # RECORDED METRICS DURING BACKTEST -- LEVERAGE 
@@ -337,7 +332,7 @@ def record_vars(context, data):
                 
                
 # REBALANCE
-#=========================================================================================================================  
+#-----------  
 def rebalance(context,data):
     
     # DEFINE THE TARGET WEIGHT OF EACH STOCK IN THE PORTFOLIO
@@ -364,5 +359,4 @@ def rebalance(context,data):
         if stock not in context.long_list.index and stock not in context.short_list.index:
             order_target(stock, 0)
             
-                        
-#=========================================================================================================================
+                 
