@@ -1,13 +1,14 @@
 # Constrained Model
-# =============================================================================================
+#-------------------
 
 # I have developed the below algorithm using the resources found in the Quantopian Lectures and Forums. 
 # This notebook was created and written by Brooks Woolfolk. All materials are for educational purposes. 
 
 # Visit https://www.quantopian.com/algorithms/ if you would like to test and adjust the below ^_^
 
+
 # IMPORT LIBRARIES
-# =============================================================================================
+#------------------
 import pandas as pd
 
 import quantopian.algorithm as algo
@@ -22,8 +23,9 @@ from quantopian.pipeline.experimental import risk_loading_pipeline
 from quantopian.pipeline.filters import QTradableStocksUS
 from quantopian.pipeline.data import factset
 
+
 # ALGORITHM PARAMETERS
-# =============================================================================================
+#----------------------
 
 def initialize(context):
     
@@ -39,11 +41,13 @@ def initialize(context):
     
     asset_turnover = Fundamentals.assets_turnover.latest.winsorize(.05, .95).zscore()
     ciwc = Fundamentals.change_in_working_capital.latest.winsorize(.05, .95).zscore()
+     
         
     # ALPHA COMBINATION
     # -----------------
     # ASSIGN EVERY ASSET AN ALPHA RANK AND CENTER VALUES AT 0 (DEMEAN).
     alpha = (asset_turnover + 2*ciwc).rank().demean()
+    
     
     # BETA DEFINITION
     beta = 0.66*RollingLinearRegressionOfReturns(
@@ -55,7 +59,7 @@ def initialize(context):
 
     
     # CREATE AND REGISTER PIPELINE
-    # =========================================================================================
+    #-------------------------------
     # COMPUTES COMBINES ALPHA AND SECTOR CODE FOR UNIVERSE OF STOCKS TO BE USED IN OPTIMIZATION
     pipe = Pipeline(
         columns={
@@ -73,7 +77,7 @@ def initialize(context):
     
     
     # SCHEDULE FUNCTIONS
-    # =========================================================================================    
+    #--------------------   
     algo.schedule_function(
         do_portfolio_construction,
         date_rule=algo.date_rules.week_start(),
@@ -83,19 +87,19 @@ def initialize(context):
 
 
 # BEFORE TRADING START
-# =============================================================================================         
+#----------------------        
 def before_trading_start(context, data):
     context.pipeline_data = algo.pipeline_output('pipe')
     context.risk_loading_pipeline = algo.pipeline_output('risk_loading_pipeline')
 
 
 # PORTFOLIO CONSTRUCTION
-# =============================================================================================
+#------------------------
 def do_portfolio_construction(context, data):
     pipeline_data = context.pipeline_data
 
     # OBJECTIVE
-    # =========================================================================================
+    #-----------
     # OBJECTIVE: MAXIMIZE ALPHA BASED ON NAIVE RANKINGS 
     # RANK ALPHA COEFFICIENT AND TRADE TO MAXIMIZE THAT ALPHA
     # 
