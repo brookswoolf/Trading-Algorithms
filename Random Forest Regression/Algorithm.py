@@ -5,7 +5,7 @@ import pandas as pd
 
 # LEARNING OBJECTIVE: TRAIN MODEL TO LEARN AND PREDICT OUTPUT BASED ON RECENT PRICE MOVEMENTS
 # METHOD: RANDOM FOREST REGRESSION
-#=====================================================================================================================
+#----------------------------------
 
 def initialize(context):    
     
@@ -34,8 +34,9 @@ def initialize(context):
     
     # CREATE A MODEL EVERY WEEK, 10 MINUTES BEFORE MARKET CLOSE
     schedule_function(create_model, date_rules.week_end(), time_rules.market_close(minutes=60))
-    
-#=====================================================================================================================
+
+# CREATE RANDOM REGRESSION MODEL    
+#--------------------------------
 def create_model(context, data):
     
     # GET DAILY PRICE VALUES FOR HISTORICAL DATE RANGE (USED TO CALCULATE DAILY CHANGES IN HISTORICAL PRICES)
@@ -59,7 +60,8 @@ def create_model(context, data):
     # FIT OUR RANDOM FOREST MODEL
     context.model.fit(inputs, output) 
 
-#=====================================================================================================================     
+# TRADE LOGIC
+#-------------    
 def trade(context, data):
     
     if context.model: 
