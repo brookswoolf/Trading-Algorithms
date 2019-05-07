@@ -1,5 +1,5 @@
 # IMPORT LIBRARIES
-#=========================================================================================
+#------------------
 import numpy as np
 import pandas as pd
 
@@ -31,7 +31,7 @@ once a month.
 """
                 
 # INITIALIZE ALGORITHM                      
-#=========================================================================================                    
+#-----------------------                   
 def initialize(context):
     
     # UNIVERSE DECLARATION
@@ -61,7 +61,7 @@ def initialize(context):
     
         
 # SETTINGS
-#=========================================================================================    
+#----------    
     
     # SCHEDULE SETTINGS FOR THE 'REBALANCE' FUNCTION
     schedule_function(func=rebalance, 
@@ -88,7 +88,7 @@ def initialize(context):
 
        
 # EVERYDAY BEFORE TRADING START: 
-#=========================================================================================                      
+#--------------------------------                      
 def before_trading_start(context, data):
     
     # CALL PIPELINE BEFORE TRADING START
@@ -104,7 +104,7 @@ def before_trading_start(context, data):
                 
                 
 # RECORD AND RETURN VARIABLES: RETURN THE TOP TEN RETURN RANKING STOCKS FROM THE LONG AND SHORT LISTS       
-#======================================================================================                           
+#-----------------------------------------------------------------------------------------------------           
 def record_vars(context, data):  
     
     # RECORDED METRICS DURING BACKTEST -- LEVERAGE 
@@ -119,7 +119,7 @@ def record_vars(context, data):
     
                
 # REBALANCE
-#=========================================================================================  
+#-----------
 def rebalance(context,data):
     
     # DEFINE THE TARGET WEIGHT OF EACH STOCK IN THE PORTFOLIO TO BE EQUAL ACROSS BOTH LISTS
