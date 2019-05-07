@@ -35,6 +35,7 @@ def initialize(context):
     # CREATE A MODEL EVERY WEEK, 10 MINUTES BEFORE MARKET CLOSE
     schedule_function(create_model, date_rules.week_end(), time_rules.market_close(minutes=60))
 
+    
 # CREATE RANDOM REGRESSION MODEL    
 #--------------------------------
 def create_model(context, data):
@@ -60,6 +61,7 @@ def create_model(context, data):
     # FIT OUR RANDOM FOREST MODEL
     context.model.fit(inputs, output) 
 
+    
 # TRADE LOGIC
 #-------------    
 def trade(context, data):
